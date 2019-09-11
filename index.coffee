@@ -43,44 +43,19 @@ http.createServer (request, response)->
 			console.log "Repo: #{hexoSourceDir}"
 			#pull posts
 			shelljs.cd hexoSourceDir
-			pullCmd = shelljs.exec "ls & git pull origin master "
+			pullCmd = shelljs.exec "git pull"
 
 			if pullCmd.code is 0
-				#pull successed!
-				console.log "pull successed!"
-
-				if shelljs.which 'node'
-					console.log "Hexo: #{hexoDir}"
-					shelljs.cd hexoDir
-					hexoCmd = shelljs.exec "hexo generate"
-					if hexoCmd.code isnt 0
-						console.log "hexo generate failed! at #{getTime()}"
-						statusCode = 500
-						result =
-							success: false
-							errMsg: "hexo generate failed:"+hexoCmd.output
-					else
-						console.log "hexo generate successed! at #{getTime()}"
-						statusCode = 200
-						result =
-							success: true
-							errMsg: ''
-							msg: hexoCmd.output
-				else
-					result =
-						success: false
-						errMsg: "can't use node, check it!"
+				console.log "Hexo: #{hexoDir}"
+				shelljs.cd hexoDir
+				hexoCmd = shelljs.exec "hexo generate"
 			else
-				console.log "pull posts failed"
 				statusCode = 500
-				result =
-					success: false
-					errMsg: "pull posts failed:"+pullCmd.output
+
+				response.writeHead statusCode, {"Content-Type": "application/json"}
+				response.end JSON.stringify result
 
 		shelljs.cd currentDir
-
-		response.writeHead statusCode, {"Content-Type": "application/json"}
-		response.end JSON.stringify result
 		return
 	return
 .listen listenPort
