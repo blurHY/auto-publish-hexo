@@ -28,9 +28,9 @@ http.createServer (request, response)->
 		sig = request.headers['x-hub-signature']
 		event = request.headers['x-github-event']
 		id = request.headers['x-github-delivery']
-		statusCode = 400
+		statusCode = 200
 		result =
-			success:false
+			success:true
 			errMsg: ''
 
 		if not (sig and id and event and signBlob(key) is sig+'')
@@ -48,6 +48,10 @@ http.createServer (request, response)->
 			if pullCmd.code is 0
 				console.log "Hexo: #{hexoDir}"
 				shelljs.cd hexoDir
+
+				response.writeHead statusCode, {"Content-Type": "application/json"}
+				response.end JSON.stringify result
+
 				hexoCmd = shelljs.exec "hexo generate"
 			else
 				statusCode = 500
